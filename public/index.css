@@ -1,0 +1,24 @@
+body {
+  background-color: rgb(27, 32, 43);
+  color: rgb(238, 238, 238);
+  font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji","Se UI Symbol";
+}
+
+textarea {
+  background-color: rgb(27, 32, 43);
+  color: rgb(238, 238, 238);
+  width: 100%;
+}
+
+canvas {
+  border: 1px solid black;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form > * {
+  margin: 8px 0;
+}
