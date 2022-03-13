@@ -21,6 +21,17 @@ inputForm.addEventListener('onsubmit', e => {
   e.preventDefault()
 })
 
+const canvasWidth = $('canvas-width')
+const canvasHeight = $('canvas-height')
+
+canvasWidth.addEventListener('change', (e) => {
+  canvas.setAttribute('width', `${e.target.value}px`)
+})
+
+canvasHeight.addEventListener('change', (e) => {
+  canvas.setAttribute('height', `${e.target.value}px`)
+})
+
 const backgroundImageInput = $('background-image')
 let backgroundImage = null
 
@@ -28,9 +39,9 @@ backgroundImageInput.addEventListener('change', () => {
   if (backgroundImageInput.files && backgroundImageInput.files[0]) {
     const img = new Image()
     img.onload = () => {
-      canvas.setAttribute('width', `${img.width}px`)
-      canvas.setAttribute('height', `${img.height}px`)
-      ctx.drawImage(img, 0, 0, img.width, img.height)
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height)
+      canvasWidth.disabled = true
+      canvasHeight.disabled = true
       setDefaultLine()
     }
 

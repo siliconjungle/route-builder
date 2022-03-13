@@ -7,16 +7,26 @@
         <h1>Route Builder</h1>
         <p>A tool for creating route images in games.</p>
         <form id="input-form">
+            <p>Canvas size cannot be modified once a background image has been selected.</p>
+            <p>If you've made a mistake, you will need to refresh the page.</p>
+            <label for="canvas-width">Canvas width:</label>
+            <div>
+                <input type="number" id="canvas-width" name="canvas-width" min="1" value="640">
+            </div>
+            <label for="canvas-height">Canvas height:</label>
+            <div>
+                <input type="number" id="canvas-height" name="canvas-height" min="1" value="480">
+            </div>
             <label for="background-image">Select background image:</label>
             <input type="file" id="background-image" name="img" accept="image/*">
             <label for="icon-images">Select icon images:</label>
             <input type="file" id="icon-images" name="img" accept="image/*" multiple>
-            <label for="icon-images-container">Select a tool</label>
+            <label for="icon-images-container">Select a tool:</label>
             <div id="icon-images-container">
                 <button id="pencil-button">Pencil</button>
                 <button id="eraser-button" disabled>Eraser</button>
             </div>
-            <label for="brush-color">Select brush color</label>
+            <label for="brush-color">Select brush color:</label>
             <input type="color" id="brush-color" value="#000000">
             <div>
                 <canvas id="game" width="640" height="480"></canvas>
