@@ -15,6 +15,63 @@ const setDefaultLine = () => {
 
 setDefaultLine()
 
+const getStateFromCanvas = () => {
+  // Likely doesn't need to check if canvas exists since the ctx is coming from canvas.
+  return canvas && ctx ? ctx.getImageData(0, 0, canvas.width, canvas.height) : null
+}
+
+const updateUndoRedoActions = () => {
+  const canUndo = currentStateIndex > 0
+  undoButton.disabled = !canUndo
+  const canRedo = currentStateIndex < history.length - 1
+  redoButton.disabled = !canRedo
+}
+
+// It would be more efficient to store the actions rather than the state -> then every x actions we could take snapshots
+// This would balance the memory v.s the replays.
+const saveCanvasToHistory = () => {
+  const canvasState = getStateFromCanvas()
+  // If the currentStateIndex is not the last element, then you cut off that branch of history
+  // Then regardless you push the new state to the end
+  if (currentStateIndex !== history.length -1) {
+    history = history.slice(0, currentStateIndex + 1)
+  }
+  history.push(canvasState)
+  currentStateIndex = history.length - 1
+
+  updateUndoRedoActions()
+}
+
+const undoButton = $('undo-button')
+const redoButton = $('redo-button')
+let history = []
+let currentStateIndex = history.length - 1
+saveCanvasToHistory()
+
+undoButton.addEventListener('click', (e) => {
+  e.preventDefault()
+
+  const previousStateIndex = currentStateIndex - 1
+
+  if (previousStateIndex >= 0) {
+    currentStateIndex = previousStateIndex
+    ctx.putImageData(history[currentStateIndex], 0, 0)
+    updateUndoRedoActions()
+  }
+})
+
+redoButton.addEventListener('click', (e) => {
+  e.preventDefault()
+
+  const nextStateIndex = currentStateIndex + 1
+
+  if (nextStateIndex <= history.length - 1) {
+    currentStateIndex = nextStateIndex
+    ctx.putImageData(history[currentStateIndex], 0, 0)
+    updateUndoRedoActions()
+  }
+})
+
 const inputForm = $('input-form')
 
 inputForm.addEventListener('onsubmit', e => {
@@ -43,6 +100,7 @@ backgroundImageInput.addEventListener('change', () => {
       canvasWidth.disabled = true
       canvasHeight.disabled = true
       setDefaultLine()
+      saveCanvasToHistory()
     }
 
     img.src = URL.createObjectURL(backgroundImageInput.files[0]) // set src to blob url
@@ -136,6 +194,7 @@ const draw = e => {
 
 canvas.addEventListener('mousedown', e => {
   if (currentTool === TOOL_TYPE.PENCIL) {
+    // I could also add a circle here when you click so you don't need to move the mouse to begin drawing.
     isPainting = true
     const mouse = getMousePosition(e)
     startX = mouse.x
@@ -143,6 +202,7 @@ canvas.addEventListener('mousedown', e => {
   } else if (currentTool === TOOL_TYPE.STAMP && stamp) {
     const mouse = getMousePosition(e)
     ctx.drawImage(stamp, mouse.x - stamp.width * 0.5, mouse.y - stamp.height * 0.5, stamp.width, stamp.height)
+    saveCanvasToHistory()
   }
 })
 
@@ -152,10 +212,36 @@ canvas.addEventListener('mousemove', e => {
   }
 })
 
+// Some work could be done to allow it to paint to the edge
+canvas.addEventListener('mouseout', () => {
+  if (currentTool === TOOL_TYPE.PENCIL) {
+    ctx.stroke()
+    ctx.beginPath()
+    if (isPainting) {
+      saveCanvasToHistory()
+      isPainting = false
+    }
+  }
+})
+
 canvas.addEventListener('mouseup', () => {
   if (currentTool === TOOL_TYPE.PENCIL) {
     isPainting = false
     ctx.stroke()
     ctx.beginPath()
+    saveCanvasToHistory()
+  }
+})
+
+window.addEventListener('pageshow', () => {
+  // Re draw the state of the window
+  if (canvas && ctx && history.length > 0) {
+    ctx.putImageData(history[currentStateIndex], 0, 0)
+  }
+})
+
+window.addEventListener('visibilitychange', (e) => {
+  if (canvas && ctx && history.length > 1 && document.visibilityState === 'visible') {
+    ctx.putImageData(history[currentStateIndex], 0, 0)
   }
 })
